@@ -8,7 +8,7 @@ pipeline {
   }
 
   parameters {
-    choice(choices: ['dev','test'], description: 'Name of the environment', name: 'ENV')
+    choice(choices: ['dev','stage','live'], description: 'Name of the environment', name: 'ENV')
     string(defaultValue: "1.0", description: 'Version', name: 'APP_VERSION')
   }
 
@@ -18,36 +18,26 @@ pipeline {
   
   stages {
     stage("Build") {
-      steps {
-        script {
-          def appImage = docker.build("myapp:${env.BUILD_ID}", "${env.MYAPP}")
-        }
-      }
+      steps { buildApp() }
     }
     
     stage("Test - Unit tests") {
       steps { runUnittests() }
     }
 
-    stage("Deploy - Dev") {
-      steps { deploy('dev') }
+    stage("Deploy - ${param.ENV}") {
+      steps { deploy("${param.ENV}") }
     }
 
-    stage("Test - UAT Dev") {
+    stage("Test - UAT ${param.ENV}") {
       steps { runUAT(5000) }
     }
-/*
-    stage("Deploy - Stage") {
-      steps { deploy('stage') }
-    }
-
-    stage("Test - UAT Stage") {
-      steps { runUAT(80) }
-    }
-*/
   }
 }
 
+def buildApp() {
+  def appImage = docker.build("myapp:${env.BUILD_ID}", "${env.MYAPP}")
+}
 
 def deploy(environment) {
 
@@ -60,6 +50,10 @@ def deploy(environment) {
   }
   else if ("${environment}" == 'stage') {
     containerName = "app_stage"
+    port = "88"
+  }
+  else if ("${environment}" == 'live') {
+    containerName = "app_live"
     port = "80"
   }
   else {
@@ -83,6 +77,6 @@ def runUnittests() {
 
 
 def runUAT(port) {
-  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_dev").trim()
+  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_${param.ENV}").trim()
   sh "${env.MYAPP}/tests/runUAT.sh ${ip} ${port}"
 }
