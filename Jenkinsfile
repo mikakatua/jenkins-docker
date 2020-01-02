@@ -25,11 +25,14 @@ pipeline {
       steps { runUnittests() }
     }
 
-    stage("Deploy - ${param.ENV}") {
-      steps { deploy("${param.ENV}") }
+    stage("Deploy") {
+      steps {
+        echo "Deploying to ${params.ENV}"
+        deploy("${params.ENV}")
+      }
     }
 
-    stage("Test - UAT ${param.ENV}") {
+    stage("Test - UAT") {
       steps { runUAT(5000) }
     }
   }
@@ -66,7 +69,6 @@ def deploy(environment) {
   sh "docker ps -a -f name=${containerName} -q | xargs -r docker rm"
 
   def appContainer = docker.image("myapp:${env.BUILD_ID}").run("-d -p ${port}:5000 --name ${containerName}")
-
 }
 
 def runUnittests() {
@@ -77,6 +79,6 @@ def runUnittests() {
 
 
 def runUAT(port) {
-  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_${param.ENV}").trim()
+  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_${params.ENV}").trim()
   sh "${env.MYAPP}/tests/runUAT.sh ${ip} ${port}"
 }
