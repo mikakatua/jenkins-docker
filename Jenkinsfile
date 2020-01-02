@@ -20,7 +20,7 @@ pipeline {
     stage("Build") {
       steps {
         script {
-          def appImage = docker.build("myapp:${env.BUILD_ID}", ${env.MYAPP})
+          def appImage = docker.build("myapp:${env.BUILD_ID}", "${env.MYAPP}")
         }
       }
     }
@@ -34,7 +34,7 @@ pipeline {
     }
 
     stage("Test - UAT Dev") {
-      steps { runUAT(8888) }
+      steps { runUAT(5000) }
     }
 /*
     stage("Deploy - Stage") {
@@ -84,5 +84,5 @@ def runUnittests() {
 
 def runUAT(port) {
   def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_dev").trim()
-  sh "${env.MYAPP}/tests/runUAT.sh ${ip} 5000"
+  sh "${env.MYAPP}/tests/runUAT.sh ${ip} ${port}"
 }
