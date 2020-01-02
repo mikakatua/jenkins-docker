@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # set variables
-hostname='localhost'
-port=$1
+hostname=$1
+port=$2
 
 # wait for the app to start
 sleep 5 
