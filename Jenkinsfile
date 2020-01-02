@@ -8,19 +8,19 @@ pipeline {
   }
 
   parameters {
-      choice(choices: ['dev','test'], description: 'Name of the environment', name: 'ENV')
-      string(defaultValue: "1.0", description: 'Version', name: 'APP_VERSION')
+    choice(choices: ['dev','test'], description: 'Name of the environment', name: 'ENV')
+    string(defaultValue: "1.0", description: 'Version', name: 'APP_VERSION')
   }
 
   environment {
-      MYAPP = "flask-app"
+    MYAPP = "flask-app"
   }
   
   stages {
     stage("Build") {
       steps {
         script {
-          def appImage = docker.build("myapp:${env.BUILD_ID}", $MYAPP)
+          def appImage = docker.build("myapp:${env.BUILD_ID}", ${env.MYAPP})
         }
       }
     }
@@ -76,13 +76,13 @@ def deploy(environment) {
 }
 
 def runUnittests() {
-  def appContainer = docker.image("myapp:${env.BUILD_ID}").inside("-e PYTHONPATH=${env.WORKSPACE}/$MYAPP") {
-    sh "python3 $MYAPP/tests/test_flask_app.py"
+  def appContainer = docker.image("myapp:${env.BUILD_ID}").inside("-e PYTHONPATH=${env.WORKSPACE}/${env.MYAPP}") {
+    sh "python3 ${env.MYAPP}/tests/test_flask_app.py"
   }
 }
 
 
 def runUAT(port) {
   def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_dev").trim()
-  sh "$MYAPP/tests/runUAT.sh ${ip} 5000"
+  sh "${env.MYAPP}/tests/runUAT.sh ${ip} 5000"
 }
