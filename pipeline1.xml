@@ -43,8 +43,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>git@github.com:mikakatua/jenkins-docker.git</url>
-          <credentialsId>paco@zape</credentialsId>
+          <url>https://github.com/mikakatua/jenkins-docker.git</url>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>
