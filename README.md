@@ -6,6 +6,11 @@ The `jenkins.sh` script installs Jenkins with Docker. It bind mounts the Docker 
 ## Using Jenkins from the command line
 Visit the endpoint http://localhost:8080/cli and it will give you a link to download the `jenkins-cli.jar`.
 
+Create a credential for Docker Hub:
+```
+java -jar jenkins-cli.jar -s http://localhost:8080 -auth <user>:<pass> create-credentials-by-xml system::system::jenkins _ < credentials1.xml
+```
+
 Create the example pipeline:
 ```
 java -jar jenkins-cli.jar -s http://localhost:8080 -auth <user>:<pass> create-job pipeline1 < pipeline1.xml
