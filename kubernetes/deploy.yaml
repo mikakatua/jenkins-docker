@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     run: myapp
   name: myapp
@@ -10,10 +9,13 @@ spec:
   selector:
     matchLabels:
       run: myapp
-  strategy: {}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         run: myapp
     spec:
