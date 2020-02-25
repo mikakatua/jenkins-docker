@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: myapp
+  name: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: myapp
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: myapp
+    spec:
+      containers:
+      - image: mikakatua/myapp
+        name: myapp
+        ports:
+        - containerPort: 5000
+        resources: {}
