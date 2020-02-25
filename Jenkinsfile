@@ -43,7 +43,7 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    docker.withRegistry( '', 'dockerhub_login') {
+                    docker.withRegistry( '', 'dockerhub-login') {
                         appImage.push('latest')
                     }
                 }
