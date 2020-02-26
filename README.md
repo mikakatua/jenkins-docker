@@ -29,3 +29,9 @@ This command will run the example pipeline.
 java -jar jenkins-cli.jar -s http://localhost:8080 -auth <user>:<pass> build pipeline1 -p ENV=stage -s -v
 ```
 
+## Kubernetes Deployment
+This example requires the installation of the [Kubernetes Continuous Deploy](https://plugins.jenkins.io/kubernetes-cd/) Jenkins plugin.
+
+After installing the plugin, you should add a new Jenkins Credential, for example `kubeconfig-admin` (of kind *Kubernetes configuration (kubeconfig)*). This file contains the information needed to access your Kubernetes cluster.
+
+The [kubernetes](kubernetes) directory in this repo contains a sample Jenkins deployment pipeline.
