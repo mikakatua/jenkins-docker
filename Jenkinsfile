@@ -1,4 +1,5 @@
 def appImage
+def appContainer
 
 pipeline {
     // Set the agent according to your Jenkins setup
@@ -19,12 +20,12 @@ pipeline {
         MYAPP = 'flask-app'
         MYREPO = 'mikakatua' // <-- Change this to your dockerhub repo
     }
- 
+
    stages {
         stage('Build Image') {
             steps {
                 script {
-                    appImage = docker.build("${env.MYREPO}/myapp:${params.APP_VERSION}", "${env.MYAPP}")
+                    appImage = docker.build("${env.MYREPO}/${env.MYAPP}:${params.APP_VERSION}", "${env.MYAPP}")
                 }
             }
         }
@@ -32,18 +33,18 @@ pipeline {
         stage("Test - Unit tests") {
             steps {
                 script {
-                    def appContainer = appImage.inside("-e PYTHONPATH=${env.WORKSPACE}/${env.MYAPP}") {
-                        sh "python3 ${env.MYAPP}/tests/test_flask_app.py" 
-                        
+                    appImage.inside("-e PYTHONPATH=${env.WORKSPACE}/${env.MYAPP}") {
+                    sh "python3 ${env.MYAPP}/tests/test_flask_app.py"
                     }
                 }
             }
-        }       
+        }
 
         stage('Push Image') {
             steps {
                 script {
                     docker.withRegistry( '', 'dockerhub-login') {
+                        appImage.push()
                         appImage.push('latest')
                     }
                 }
@@ -87,11 +88,11 @@ def deploy(environment) {
   sh "docker ps -f name=${containerName} -q | xargs --no-run-if-empty docker stop"
   sh "docker ps -a -f name=${containerName} -q | xargs -r docker rm"
 
-  def appContainer = docker.image("${env.MYREPO}/myapp:${params.APP_VERSION}").run("-d -p ${port}:5000 --name ${containerName}")
+  appContainer = docker.image("${env.MYREPO}/${env.MYAPP}:${params.APP_VERSION}").run("-d -p ${port}:5000 --name=${containerName}")
 }
 
 def runUAT(port) {
-  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' app_${params.ENV}").trim()
+  def ip = sh(returnStdout: true, script: "docker inspect -f '{{ .NetworkSettings.IPAddress }}' ${appContainer.id}").trim()
+  echo "Container IP is ${ip}"
   sh "${env.MYAPP}/tests/runUAT.sh ${ip} ${port}"
 }
-
