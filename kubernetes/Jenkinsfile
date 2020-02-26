@@ -1,0 +1,72 @@
+def appImage
+
+pipeline {
+    // Set the agent according to your Jenkins setup
+    //agent any
+    agent { label 'jenkins-jnlp-slave' }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    parameters {
+        string(defaultValue: "1.0", description: 'Version', name: 'APP_VERSION')
+    }
+
+    environment {
+        MYAPP = 'flask-app'
+        MYREPO = 'mikakatua' // <-- Change this to your dockerhub repo
+    }
+
+   stages {
+        stage('Build Image') {
+            steps {
+                script {
+                    appImage = docker.build("${env.MYREPO}/${env.MYAPP}:${params.APP_VERSION}", "${env.MYAPP}")
+                }
+            }
+        }
+
+        stage("Test - Unit tests") {
+            steps {
+                script {
+                    appImage.inside("-e PYTHONPATH=${env.WORKSPACE}/${env.MYAPP}") {
+                        sh "python3 ${env.MYAPP}/tests/test_flask_app.py"
+                    }
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    docker.withRegistry( '', 'dockerhub-login') {
+                        appImage.push()
+                        appImage.push('latest')
+                    }
+                }
+            }
+        }
+
+        stage("Deploy to K8s") {
+            steps {
+                kubernetesDeploy(
+                    kubeconfigId: 'kubeconfig-admin',
+                    configs: 'kubernetes/*.yaml',
+                    enableConfigSubstitution: true
+                )
+            }
+        }
+
+        stage("Test - UAT") {
+            steps { runUAT(5000) }
+        }
+
+    }
+}
+
+def runUAT(port) {
+  sh "sleep 5"
+  sh "${env.MYAPP}/tests/runUAT.sh ${env.MYAPP}.default ${port}"
+}
