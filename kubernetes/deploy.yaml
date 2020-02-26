@@ -2,13 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    run: myapp
-  name: myapp
+    run: $MYAPP
+  name: $MYAPP
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: myapp
+      run: $MYAPP
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -17,11 +17,11 @@ spec:
   template:
     metadata:
       labels:
-        run: myapp
+        run: $MYAPP
     spec:
       containers:
-      - image: mikakatua/myapp
-        name: myapp
+      - image: $MYREPO/$MYAPP
+        name: $MYAPP
         ports:
         - containerPort: 5000
         resources: {}
